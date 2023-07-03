@@ -199,9 +199,8 @@ abstract class Element {
 	
 	/**
 	 * Get value from item
-	 * @return array
 	 */
-	public function get_value() : array {
+	public function get_value() {
             if (isset($this->item_field->values[0])){
                 return $this->item_field->values;
             } else {
