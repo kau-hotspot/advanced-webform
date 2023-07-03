@@ -86,7 +86,7 @@ class Embed extends Element{
                 ));
                 
                 $embeds[] = $embed;
-            } catch (Exception $e){
+            } catch (\Exception $e){
                 continue;
             }
         }
@@ -114,7 +114,7 @@ class Embed extends Element{
 
 
         $attributes = $this->get_attributes();
-        $collection = $this->get_value();
+        $collection = (array) $this->get_value();
         // TODO
         // until we support multiple link inputs in the same field
         if (count($collection)){

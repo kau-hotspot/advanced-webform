@@ -65,9 +65,9 @@ class Category extends Element
 
     /**
      * Constructor
-     * @param PodioAppField $app_field
-     * @param \AdvancedWebform $form
-     * @param PodioItemField $item_field
+     * @param \PodioAppField $app_field
+     * @param \AdvancedWebform\AdvancedWebform $form
+     * @param \PodioItemField $item_field
      */
     public function __construct($app_field, $form, $item_field = null)
     {
@@ -155,7 +155,7 @@ class Category extends Element
         $type = $this->get_attribute('type');
         $required = $this->get_attribute('required');
 
-        $options = $this->get_attribute('options');
+        $options = (array) $this->get_attribute('options');
         if (count($options)) {
             foreach ($options as $key => $option) {
                 // (1=value, 2=label, 3=name, 4=type, 5=class, 6=style, 7=other attributes)
