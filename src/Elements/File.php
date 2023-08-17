@@ -89,7 +89,7 @@ class File extends Element{
             $new_values = array();
    
 
-            if (is_array($values['name'])){
+            if (isset($values['name']) && is_array($values['name'])){
                 $count = count($values['name']);
                 for($i=0;$i<$count;$i++){
                     $new_values[] = array(
