@@ -41,7 +41,7 @@ namespace AdvancedWebform;
  * @since   1.0.0
  */
 class AdvancedWebform {
-	
+
     /**
      * @const string
      */
@@ -49,7 +49,7 @@ class AdvancedWebform {
 
     /**
      *
-     * @var PodioApp 
+     * @var PodioApp
      */
     protected $app;
 
@@ -65,7 +65,7 @@ class AdvancedWebform {
      * @var String|false
      */
     protected $error = false;
-    
+
     /**
      * The Element which has thrown an error
      * @var array of \AdvancedWebform\ElementError
@@ -86,7 +86,7 @@ class AdvancedWebform {
 
     /**
      * Array of PodioFiles
-     * @var array 
+     * @var array
      */
     protected $files = array();
 
@@ -96,7 +96,7 @@ class AdvancedWebform {
     // prefix should not contain the last [] surrounding "name"
     // as the element will take care of that.
     protected $field_name_prefix = '';
-    
+
     protected static $fake_field_id_index = PHP_INT_MAX;
 
 
@@ -112,7 +112,7 @@ class AdvancedWebform {
      * field_description
      *   1 description
      * sub_sub_field - used when a subform has contact sub elements
-     * @var array 
+     * @var array
      */
 
     protected $decorators = array(
@@ -124,7 +124,7 @@ class AdvancedWebform {
         'sub_parent_field' => '<div class="form-group %6$s"><div class="padding-left"><h4>%2$s%5$s%4$s</h4>%3$s</div></div>',
         'sub_sub_field' => '<label class="control-label" for="%1$s">%2$s%5$s</label>%3$s%4$s',
     );
-	
+
     /**
      * Method type constants
      */
@@ -133,7 +133,7 @@ class AdvancedWebform {
 
     /**
      * Allowed methods
-     * @var array 
+     * @var array
      */
     protected $methods = array(
         self::METHOD_GET,
@@ -148,43 +148,43 @@ class AdvancedWebform {
 
     /**
      * form-tag method, GET or POST
-     * @var string 
+     * @var string
      */
     protected $method;
-    
+
     /**
      *
-     * @var string 
+     * @var string
      */
     protected $action;
-    
+
     /**
      *
-     * @var string 
+     * @var string
      */
     protected $enctype;
- 
+
     /**
      * Use reCaptcha?
-     * @var bool 
+     * @var bool
      */
     protected $recaptcha = false;
-    
+
     /**
      *
-     * @var string 
+     * @var string
      */
     protected $recaptcha_public_key;
-    
+
     /**
      *
-     * @var string 
+     * @var string
      */
     protected $recaptcha_private_key;
 
     /**
      * Default form attributes
-     * @var type 
+     * @var type
      */
     protected $attributes = array(
         'submit_value' => 'Submit',
@@ -243,18 +243,18 @@ class AdvancedWebform {
                 $this->set_is_sub_form($attributes['is_sub_form']);
                 unset($attributes['is_sub_form']);
         }
-        
+
         // set recaptcha
         if (isset($attributes['recaptcha']) && $attributes['recaptcha']){
             if (!$attributes['recaptcha_public_key'] ||
                 !$attributes['recaptcha_private_key']){
                 throw new \Exception('ReCaptcha public and private key must be included');
             }
-            
+
             $this->set_recaptcha($attributes['recaptcha']);
             $this->set_recaptcha_public_key($attributes['recaptcha_public_key']);
             $this->set_recaptcha_private_key($attributes['recaptcha_private_key']);
-            
+
             unset($attributes['recaptcha']);
             unset($attributes['recaptcha_public_key']);
             unset($attributes['recaptcha_private_key']);
@@ -329,7 +329,7 @@ class AdvancedWebform {
 
         return $this->elements[$external_id];
     }
-    
+
     /**
      * Returns the elements
      * @return array
@@ -352,10 +352,12 @@ class AdvancedWebform {
 
             $this->set_element($csrf_field);
         }
-        
+
         // get all fields
         foreach($this->get_app()->fields AS $app_field){
-            if ($app_field->status != "active"){
+            $attributes = $this->get_field_attributes($app_field);
+            $isHidden = $attributes['hidden'] ?? false;
+            if ($app_field->status != "active" || $isHidden){
                 continue;
             }
 
@@ -366,11 +368,6 @@ class AdvancedWebform {
                     $item_field = $this->item->fields[$key];
             }
 
-            // TODO is this really working?
-            // it should be possible to send attributes to specific elements
-            // in the PodioAdvancedForm constructor through the "fields"
-            // attribute
-            $attributes = $this->get_field_attributes($app_field);
             // initiate the element
             $this->set_element($app_field, $item_field, $attributes);
         }
@@ -392,12 +389,12 @@ class AdvancedWebform {
 
             $this->set_element($app_field);
         }
-        
+
         // use captcha?
         if ($this->get_recaptcha() &&
             $this->get_recaptcha_public_key() &&
             $this->get_recaptcha_private_key()){
-            
+
             $app_field = new \PodioAppField(array(
                 'status' => 'active',
                 'required' => true,
@@ -409,7 +406,7 @@ class AdvancedWebform {
                     'private_key' => $this->get_recaptcha_private_key(),
                 )
             ));
-            
+
             $this->set_element($app_field);
         }
     }
@@ -511,7 +508,7 @@ class AdvancedWebform {
 
         return false;
     }
-	
+
     /**
      * Get all form fields attributes
      * This is a way to specify a specific field's attributes during form
@@ -539,7 +536,7 @@ class AdvancedWebform {
 
         return null;
     }
-    
+
     protected function get_fake_field_id_index(){
         return self::$fake_field_id_index--;
     }
@@ -590,14 +587,14 @@ class AdvancedWebform {
 
         return strtolower($method);
     }
-    
+
     /**
      * Set form method
      * @param string $method
      * @throws PodioAdvancedFormError
      */
     public function set_method($method){
-        // Verify method is allowed 
+        // Verify method is allowed
         $method = strtolower($method);
         if (!in_array($method, $this->methods)){
                 throw new Error('"' . $method . '" is not a valid form method.');
@@ -618,7 +615,7 @@ class AdvancedWebform {
         }
         return $action;
     }
-    
+
     /**
      * Set form action
      * action should be a url to the form validation av saving script
@@ -641,7 +638,7 @@ class AdvancedWebform {
 
         return $enctype;
     }
-    
+
     /**
      * Set form encoding type
      * @param type $enctype
@@ -649,7 +646,7 @@ class AdvancedWebform {
     public function set_enctype($enctype){
         $this->set_attribute('enctype', $enctype);
     }
-    
+
     /**
      * Use recaptcha?
      * @return bool
@@ -657,7 +654,7 @@ class AdvancedWebform {
     public function get_recaptcha(){
         return $this->recaptcha;
     }
-    
+
     /**
      * Use recaptcha?
      * @param bool $recaptcha
@@ -665,7 +662,7 @@ class AdvancedWebform {
     public function set_recaptcha($recaptcha){
         $this->recaptcha = (bool) $recaptcha;
     }
-    
+
     /**
      * Recaptcha public key
      * @return string
@@ -673,7 +670,7 @@ class AdvancedWebform {
     public function get_recaptcha_public_key(){
         return $this->recaptcha_public_key;
     }
-    
+
     /**
      * Use recaptcha?
      * @param string $recaptcha_public_key
@@ -681,7 +678,7 @@ class AdvancedWebform {
     public function set_recaptcha_public_key($recaptcha_public_key){
         $this->recaptcha_public_key = (string) $recaptcha_public_key;
     }
-    
+
     /**
      * Recaptcha private key
      * @return string
@@ -689,7 +686,7 @@ class AdvancedWebform {
     public function get_recaptcha_private_key(){
         return $this->recaptcha_private_key;
     }
-    
+
     /**
      * Use recaptcha?
      * @param string $recaptcha_private_key
@@ -771,6 +768,7 @@ class AdvancedWebform {
         if (!$this->is_sub_form()){
             $attributes = $this->get_attributes();
             unset($attributes['submit_value']);
+            unset($attributes['fields']);
             $head = '<form';
             foreach($attributes AS $key => $value){
                 // if true, then attribute minimization is allowed
@@ -778,7 +776,7 @@ class AdvancedWebform {
                     $head .= ' ' . $key;
                 } elseif ($value){ // all falsy values won't be added
                     $head .= ' ' . $key . '="' . (string) $value . '"';
-                }	
+                }
             }
             $head .= '>';
 
@@ -806,14 +804,14 @@ class AdvancedWebform {
         return implode('', $output);
     }
     /**
-     * Set values from form submission. 
+     * Set values from form submission.
      * $data = $_POST
      * $files = $_FILES
      * @param array $data
      * @param array $files
      */
     public function set_values($data, $files = array()){
-        
+
         if (!$this->is_sub_form()){
             // validate CSRF
             $csrf = $this->get_element('advanced-webform-csrf');
@@ -827,7 +825,7 @@ class AdvancedWebform {
                 $recaptcha->validate();
             }
         }
-        
+
         foreach($this->elements AS $key => $element){
             if (isset($data[$key])){
                 // catch all errors to postpone them
@@ -843,12 +841,12 @@ class AdvancedWebform {
                 $element->set_value($files[$key]);
             }
         }
-        
+
         if ($this->error_elements){
             throw $this->error_elements[0];
         }
     }
-	
+
     /**
      * Get error
      * @return string
@@ -856,7 +854,7 @@ class AdvancedWebform {
     public function get_error(){
         return $this->error;
     }
-    
+
     /**
      * Set error
      * @param string $message
@@ -864,10 +862,10 @@ class AdvancedWebform {
     public function set_error($message){
         $this->error = (string) $message;
     }
-	
+
     /**
      * Save $this->item (PodioItem) to Podio
-     * @return false|int $item_id 
+     * @return false|int $item_id
      */
     public function save(){
         // remove csrf token, it should not be submitted to Podio.
@@ -885,7 +883,7 @@ class AdvancedWebform {
         try {
             foreach($this->elements AS $key => $element){
                 $element->save();
-                
+
                 // if element is the attachment field, not an image or similar
                 // add to the item files attribute
                 // otherwise add item field to item
